@@ -1,0 +1,21 @@
+diff --git a/app/handlers/http_handler.py b/app/handlers/http_handler.py
+index 66d9d43..afabaab 100644
+--- a/app/handlers/http_handler.py
++++ b/app/handlers/http_handler.py
+@@ -71,12 +71,14 @@ class URLShortenerHandler(SimpleHTTPRequestHandler):
+ 
+                 if original_url:
+                     parsed_url = urllib.parse.urlparse(original_url)
++                    normalized_url = parsed_url.geturl()
++
+                     if parsed_url.scheme != 'http' and parsed_url.scheme != 'https':
+-                        original_url = 'https://' + get_header(self, "Host") + '/' + parsed_url.geturl()
++                        normalized_url = 'https://' + get_header(self, "Host") + '/' + normalized_url
+ 
+                     self.send_contents(302, {
+                         'Content-Length': '0',
+-                        'Location': original_url
++                        'Location': normalized_url
+                     }, '')
+                     return
+                 else:

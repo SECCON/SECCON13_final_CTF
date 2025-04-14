@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <title>Reserve - SECCON Glitch Gate</title>
+  </head>
+  <body>
+    <header>
+      <h1>Reservation</h1>
+      <p>SECCON Glitch Gate</p>
+      {%- if next_time -%}
+      <h3>
+        Next team: {% if next_book %}{{ next_book[0] }}<br>
+        Time: {{ next_time.strftime('%m/%d %H:%M:%S') }} JST (<span id="timer"></span>){% else %}N/A{% endif %}
+      </h3>
+      {%- endif -%}
+    </header>
+
+    <main>
+      {% with messages = get_flashed_messages() %}
+      {%- if messages -%}
+      <div>
+        {%- for message in messages -%}
+        <p class="notice">Message: {{ message }}</p>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+      {% endwith %}
+      <p>
+        SECCON Glitch Gate is a hardware challenge where you analyze firmware and develop exploit.
+        Teams can attempt the challenge once you have prepared.
+      </p>
+      <details>
+        <summary>Rule (MUST READ!)</summary>
+        <ul>
+          <li>You may not remove the polyimide tape (Kapton tape) from the Arduino Nano. This tape is in place to prevent accidental damage to the device.</li>
+          <li>Only attacks using header pins are allowed. Directly attacking the microcontroller's pins is prohibited.</li>
+          <li>Attempting to write to or extract the program from the victim Arduino is prohibited.</li>
+          <li>Each attempt lasts <strong>20 minutes</strong>.</li>
+          <li>A team can attempt the challenge <strong>once a day</strong>. (Up to 2 attempts over 2 days)</li>
+          <li>When your reserved time begins, <strong>at lesat 1 and up to 4 team members</strong> must go to the designated challenge room.</li>
+          <li>You may leave the room and give up your attempt at any time.</li>
+          <li>You will have access to the challenge hardware and an <strong>oscilloscope</strong> inside the room.</li>
+          <li>Bringing <strong>any additional equipment</strong> other than your laptop, phones, and the provided tools is <strong>strictly prohibited</strong>.</li>
+          <li>You must <strong>follow the instructions</strong> given by the event staff at all times.</li>
+          <li>If no event staff is present in the challenge room, please notify them immediately.</li>
+        </ul>
+        <p>Check <code>README.md</code> for provided tools.</p>
+        <small>* If you accidentally break the provided tool or think it is broken, ask event staff for a replacement.</small>
+      </details>
+      <form action="/book" method="POST" name="book">
+        <div>
+          <label for="token">1. Enter your team token</label>
+          <input id="token" type="text" style="width: 100%" name="token" required>
+          <input id="day" type="hidden" name="day">
+          <input id="index" type="hidden" name="index">
+        </div>
+        <p>
+          2. Choose desired time to attempt your challenge (JST)<br>
+          <small style="color: red;">* You cannot cancel your reservation.</small><br>
+          <small style="color: red;">* If you have completed your exploit but all slots are full, create a ticket in Discord - we may be able to provide additional slot.</small><br>
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Day 1</th>
+              <th></th>
+              <th style="border: 0; background: white;"></th>
+              <th>Day 2</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for i in range(0, config.game.n) -%}
+            <tr>
+              {%- set time_start = config.game.day1.start + config.game.stride*i -%}
+              {%- set time_end   = time_start + config.game.attempt -%}
+              {%- if time_start < config.game.day1.end -%}
+              {%- set time = time_start.strftime('%H:%M') + '-' + time_end.strftime('%H:%M') -%}
+              <td>{{ time }}</td>
+              <td>
+                {%- if now + hour <= config.game.day1.start + config.game.stride*i -%}
+                {%- for name, day, idx in books if day == 1 and idx == i -%}
+                <strong>{{ name }}</strong>
+                {%- else -%}
+                <button type="button" onclick="return window.book(1, {{ i }}, 'Day 1 - {{ time }}');">Reserve here</button>
+                {%- endfor -%}
+
+                {%- else -%}
+
+                {%- for name, day, idx in books if day == 1 and idx == i -%}
+                <strong>{{ name }}</strong> (Slot ended)
+                {%- else -%}
+                <span>Slot ended</span>
+                {%- endfor -%}
+                {%- endif -%}
+              </td>
+              {%- else -%}
+              <td style="border: 0; background: white;"></td>
+              <td style="border: 0; background: white;"></td>
+              {%- endif -%}
+
+              <td style="border: 0; background: white;"></td>
+
+              {%- set time_start = config.game.day2.start + config.game.stride*i -%}
+              {%- set time_end   = time_start + config.game.attempt -%}
+              {%- if time_start < config.game.day2.end -%}
+              {%- set time = time_start.strftime('%H:%M') + '-' + time_end.strftime('%H:%M') -%}
+              <td>{{ time }}</td>
+              <td>
+                {%- if now +hour <= config.game.day2.start + config.game.stride*i -%}
+                {%- for name, day, idx in books if day == 2 and idx == i -%}
+                <strong>{{ name }}</strong>
+                {%- else -%}
+                <button type="button" onclick="return window.book(2, {{ i }}, 'Day 2 - {{ time }}');">Reserve here</button>
+                {%- endfor -%}
+
+                {%- else -%}
+
+                {%- for name, day, idx in books if day == 2 and idx == i -%}
+                <strong>{{ name }}</strong> (Slot ended)
+                {%- else -%}
+                <span>Slot ended</span>
+                {%- endfor -%}
+                {%- endif -%}
+              </td>
+              {%- else -%}
+              <td style="border: 0; background: white;"></td>
+              <td style="border: 0; background: white;"></td>
+              {%- endif -%}
+            </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </form>
+    </main>
+    <script>
+    function book(day, index, datetime) {
+      if (window.confirm(`Are you sure you want to reserve this time?\n${datetime}`)) {
+        document.getElementById('day').value = day;
+        document.getElementById('index').value = index;
+        document.book.submit();
+      }
+      return false;
+    }
+
+    {%- if next_time -%}
+    const next_time = new Date({{ next_time.year }}, {{ next_time.month - 1 }}, {{ next_time.day }}, {{ next_time.hour + 9 }}, {{ next_time.minute }}, {{ next_time.second }});
+
+    document.body.onload = () => {
+      setInterval(() => {
+        const nowUTC = new Date();
+        const nowJST = new Date(nowUTC.getTime() + (9 * 60 * 60 * 1000));
+
+        // 残り時間を計算
+        let diff = Math.floor((next_time - nowJST) / 1000);
+
+        if (diff <= 0) {
+          document.getElementById("timer").textContent = "00h00m00s";
+          return;
+        }
+
+        const hours = Math.floor(diff / 3600);
+        diff %= 3600;
+        const minutes = Math.floor(diff / 60);
+        const seconds = diff % 60;
+
+        document.getElementById("timer").textContent =
+          `${hours.toString().padStart(2, '0')}h` +
+          `${minutes.toString().padStart(2, '0')}m` +
+          `${seconds.toString().padStart(2, '0')}s`;
+      }, 321);
+    }
+    {%- endif -%}
+    </script>
+
+    <footer>
+      <p>SECCON 13 CTF Finals</p>
+    </footer>
+  </body>
+</html>

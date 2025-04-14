@@ -1,0 +1,18 @@
+{% extends "common.html" %}
+{% set title = "History" %}
+{%- block main -%}
+      <span class="popup">{{ session['name'] }}</span>
+      <div>
+        <h3>Your uploads</h3>
+        <p>
+          We keep track of all uploads so that scores can be recalculated in case of trouble.<br>
+          Feel free to create a ticket on Discord if your program does not work on remote.<br>
+          <small>* Players do not usually need to use this page.</small>
+        </p>
+        <ul>
+          {%- for id, phase, timestamp in storage -%}
+          <li><a href="/api/storage/{{ id }}">{{ timestamp }}</a> (Phase: {{ phase }})</li>
+          {%- endfor -%}
+        </ul>
+      </div>
+{%- endblock -%}

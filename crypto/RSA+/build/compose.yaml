@@ -1,0 +1,9 @@
+services:
+  server:
+    build: .
+    working_dir: /app
+    ports:
+      - "11337:11337"
+    restart: always
+    environment:
+      - "FLAG=SECCON{R4d1c4lly_Sum_i5_Ab5urd}"

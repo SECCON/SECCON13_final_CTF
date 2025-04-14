@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+import json
+import hashlib
+import os
+import random
+import subprocess
+import sys
+
+def gen_input(tick: int):
+    """tickに基づいてランダムな入力を作る
+    """
+    if tick <= 6:
+        # 0-30分
+        n = random.randint(0x30_0000, 0x40_0000)
+        a = random.randint(1, 0xffff)
+        b = random.randint(1, 0xffff)
+        return [str(n), str(a), str(b)]
+
+    elif tick <= 12:
+        # 30-60分
+        n = random.randint(0x40_0000, 0x80_0000)
+        a = random.randint(1, 0xffffffff)
+        b = random.randint(1, 0xffffffff)
+        return [str(n), str(a), str(b)]
+
+    elif tick <= 18:
+        # 60-90分
+        n = random.randint(0x80_0000, 0xc0_0000)
+        a = random.randint(1, 0xffffffff_ffffffff)
+        b = random.randint(1, 0xffffffff_ffffffff)
+        return [str(n), str(a), str(b)]
+
+    elif tick <= 24:
+        # 90-120分
+        n = random.randint(0xc0_0000, 0x100_0000)
+        a = random.randint(1, 0xffffffff_ffffffff)
+        b = random.randint(1, 0xffffffff_ffffffff)
+        return [str(n), str(a), str(b)]
+
+    else:
+        # 120-150分
+        n = random.randint(0x1000_0000, 0x1400_0000)
+        a = random.randint(1, 0xffffffff_ffffffff)
+        b = random.randint(1, 0xffffffff_ffffffff)
+        return [str(n), str(a), str(b)]
+
+if __name__ == '__main__':
+    dirpath = os.path.dirname(os.path.abspath(sys.argv[0]))
+    solver_path = os.path.join(dirpath, '../build/ans-6')
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} tick")
+        exit(1)
+
+    tick = int(sys.argv[1])
+
+    inp = ' '.join(gen_input(tick)).encode()
+    try:
+        p = subprocess.Popen(
+            [solver_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+        )
+        o = p.communicate(inp, timeout=10)
+        print(json.dumps({'input': inp.hex(), 'output': o[0].hex()}))
+
+    except subprocess.TimeoutExpired as e:
+        pass
+
+    finally:
+        p.kill()

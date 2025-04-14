@@ -1,0 +1,126 @@
+{% extends "common.html" %}
+{% set title = "Dashboard" %}
+{%- block main -%}
+<span class="popup">{{ session['name'] }}</span>
+{% with messages = get_flashed_messages() %}
+{%- if messages -%}
+<div>
+  {%- for message in messages -%}
+  <p class="notice">Message: {{ message }}</p>
+  {%- endfor -%}
+</div>
+{%- endif -%}
+{% endwith %}
+<div>
+  <h3>Game status</h3>
+  <h1 class="tick">
+    <span>Tick:<br>
+      {%- with tick = get_tick(config) -%}
+      {%- if tick == -1 -%}GAMEOVER
+      {%- elif tick == 0 -%}- / -
+      {%- else -%}{{ tick }} / {{ config.game.max_tick }}
+      {%- endif -%}
+      {%- endwith -%}
+    </span>
+    <span>Phase:<br>
+      {%- set phase = get_phase(config) -%}
+      {%- if phase == -1 -%}GAMEOVER
+      {%- elif phase == 0 -%}- / -
+      {%- else -%}{{ phase }} / {{ config.game.max_phase }}
+      {%- endif -%}
+    </span>
+  </h1>
+  <table>
+    <tr>
+      <th>Time</th>
+      {%- set today_phase = phase - config.game.initial_phase -%}
+      {%- for difficulty in config.game.phase[today_phase].difficulty -%}
+      <td>{{ loop.index0 * 30 }} - {{ loop.index * 30 }} min</td>
+      {%- endfor -%}
+    </tr>
+    <tr>
+      <th>Testcase difficulty</th>
+      {%- for difficulty in config.game.phase[today_phase].difficulty -%}
+      <td>{{ difficulty }}</td>
+      {%- endfor -%}
+    </tr>
+  </table>
+
+  <div style="margin-top: 2em; text-align: center;">
+    <button onclick="download()">Download Challenge</button>
+    <script>
+    function download() {
+      document.location.href = '/challenge'
+    }
+    </script>
+  </div>
+</div>
+
+<div>
+  <h3>Upload</h3>
+  <p>Upload your binary with curl</p>
+  <pre><code>curl -X POST {{ url_for('api_upload', _external=True) }} \
+      -H "X-Token: YourTeamToken" \
+      -F "file=@/path/to/your/binary"</code></pre>
+
+  <p>or upload from this form</p>
+  <form method="POST" action="/api/upload" enctype="multipart/form-data">
+    <div class="file-upload-container">
+      <label id="file-label" for="file" class="file-label">Select binary</label>
+      <input type="file" id="file" name="file" class="file-input" required>
+      <input type="submit" id="file-upload" value="Upload to server" style="display: none;">
+      <ul class="file-info">
+        <strong>Filename: <span id="file-info-name"></span></strong><br>
+        <strong>SHA-256: <span id="file-info-hash"></span></strong>
+      </ul>
+      <p id="file-caution" style="color: red; display: none;"></p>
+    </div>
+  </form>
+
+  <p>
+    <small>Static link is recommended if you use some external libraries.</small><br>
+    <small>Size limit: 50MB (50,000,000 bytes)</small>
+  </p>
+
+  <script>
+  document.getElementById('file').addEventListener('change', async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const hash = await calculateSHA256(file);
+      document.getElementById('file-caution').innerText =
+        "Your file is not uploaded yet. Click upload button above if you are ready to proceed.";
+      document.getElementById('file-info-name').innerText = file.name;
+      document.getElementById('file-info-hash').innerText = hash;
+      document.getElementById('file-label').style.display = 'none';
+      document.getElementById('file-upload').style.display = 'block';
+      document.getElementById('file-caution').style.display = 'block';
+    } catch (e) {
+      console.log(e);
+      document.getElementById('file-caution').innerText = e;
+      document.getElementById('file-caution').style.display = 'block';
+    }
+  });
+
+  async function calculateSHA256(file) {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    if (buf[0] !== 0x7f ||
+        buf[1] !== 0x45 ||
+        buf[2] !== 0x4c ||
+        buf[3] !== 0x46) {
+      throw "Invalid file format. Upload a valid ELF file.";
+    }
+    const hashArray = Array.from(sha256(buf));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  </script>
+</div>
+
+<div>
+  <h3>Latest upload</h3>
+  <ul>
+    <li><strong>SHA-256: </strong>{{ sha256 }}</li>
+    <li><strong>Last updated: </strong>{{ timestamp }}</li>
+  </ul>
+</div>
+{%- endblock -%}

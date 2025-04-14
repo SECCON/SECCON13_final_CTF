@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="/static/css/style.css" integrity="sha256-3qEMERP9/0G20GICxgsT1BroFIU9fujyohI7nMBO3yk=" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <div class="url-shortener">
+            <h1>URL Shortener</h1>
+            <div class="input-group">
+                <input type="url" id="urlInput" placeholder="Enter your long URL here" required>
+                <button id="shortenButton">Shorten</button>
+            </div>
+            <details class="custom-shortcode">
+                <summary>Options</summary>
+                <div class="shortcode-input-group">
+                    <input type="text" id="shortcodeInput" placeholder="Custom shortcode (optional)" minlength="5" maxlength="50" pattern="[a-zA-Z0-9]+" title="Only letters and numbers are allowed">
+                </div>
+            </details>
+            <div class="result" id="result">
+                <div class="result-container hidden">
+                    <p>Your shortened URL:</p>
+                    <div class="shortened-url">
+                        <input type="text" id="shortUrl" readonly>
+                        <button id="copyButton">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/main.js" integrity="sha256-AGjXyjxFrQZsoMhDB11IRItDa6oGZdwALkCRHUTaGhc="></script>
+</body>
+</html>

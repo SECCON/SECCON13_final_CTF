@@ -1,0 +1,146 @@
+{% extends "common.html" %}
+{% set title = "Scoreboard" %}
+{%- block main -%}
+<canvas id="scoreChart"></canvas>
+
+<span class="popup">{{ session['name'] }}</span>
+<p>Hover mouse for details.</p>
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      <th>Phase</th>
+      {%- for phase, colspan in phases -%}
+      <th colspan="{{ colspan }}">{{ phase }}</th>
+      {%- endfor -%}
+    </tr>
+    <tr>
+      <th>Rank</th>
+      <th>Tick</th>
+      {%- for tick in range(history|length, 0, -1) -%}
+      <th>{{ tick }}</th>
+      {%- endfor -%}
+    </tr>
+  </thead>
+  <tbody>
+    {%- for id, name in teams -%}
+    <tr>
+      {%- set total_score = scores[id-1][1] -%}
+      {%- set rank = scores[id-1][2] -%}
+      <td>
+        {%- if rank == 1 -%}&#129351;
+        {%- elif rank == 2 -%}&#129352;
+        {%- elif rank == 3 -%}&#129353;
+        {%- else -%}{{ rank }}th
+        {%- endif -%}
+        ({{ total_score }} pts)
+      </td>
+
+      <th>{{ name }}</th>
+      {%- for i in range(history|length-1, -1, -1) -%}
+      {%- if id in history[i][0] -%}
+      {%- set score = history[i][0][id][0] -%}
+      {%- set log = history[i][0][id][1] -%}
+
+      {%- if log['err'] == 'ok' -%}
+      <td class="ok" data-tooltip="Tick: {{ i+1 }}<br>Team: {{ name }}<br>Speed: {{ log['speed'] }}s">{{ score }}</td>
+      {%- elif log['err'] == 'timeout' -%}
+      <td class="timeout" data-tooltip="Tick: {{ i+1 }}<br>Team: {{ name }}<br>Timeout">{{ score }}</td>
+      {%- elif log['err'] == 'wrong' -%}
+      {%- if 'detail' in log and log['detail'] == 'Exit code: 126' -%}
+      <td class="error" data-tooltip="Tick: {{ i+1 }}<br>Team: {{ name }}<br>Wrong output due to system error (Admin will fix it)">{{ score }}</td>
+      {%- else -%}
+      <td class="wrong" data-tooltip="Tick: {{ i+1 }}<br>Team: {{ name }}<br>Wrong output{% if 'detail' in log %} ({{ log['detail'] }}){% endif %}">{{ score }}</td>
+      {%- endif -%}
+      {%- else -%}
+      <td class="error" data-tooltip="Tick: {{ i+1 }}<br>Team: {{ name }}<br>Admin will fix this error">{{ score }}</td>
+      {%- endif -%}
+
+      {%- else -%}
+      <td class="error" data-tooltip="Tick: {{ i+1 }}<br>Team: {{ name }}<br>Admin will fix this error">?</td>
+      {%- endif -%}
+      {%- endfor -%}
+    </tr>
+    {%- endfor -%}
+  </tbody>
+</table>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const tooltip = document.createElement("div");
+tooltip.className = "tooltip";
+document.body.appendChild(tooltip);
+
+document.querySelectorAll("[data-tooltip]").forEach(element => {
+  element.addEventListener("mouseenter", (event) => {
+    const text = event.target.getAttribute("data-tooltip");
+    tooltip.innerHTML = text;
+    tooltip.style.visibility = "visible";
+    tooltip.style.opacity = "1";
+  });
+
+  element.addEventListener("mousemove", (event) => {
+    tooltip.style.top = `${event.clientY + 10 + window.pageYOffset}px`;
+    tooltip.style.left = `${event.clientX + 10}px`;
+  });
+
+  element.addEventListener("mouseleave", () => {
+    tooltip.style.visibility = "hidden";
+    tooltip.style.opacity = "0";
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+
+  const teams = {{ teams | tojson }};
+  const history = {{ history | tojson }};
+
+  const datasets = teams.map(([id, name]) => {
+    let sum = 0;
+    let data = [];
+    for (let i = 0; i < history.length; i++) {
+      if (history[i][0][id] !== undefined) {
+        sum += history[i][0][id][0];
+        data.push(sum);
+      }
+    }
+    return { label: name, data };
+  });
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: history.map((_, index) => index + 1),
+      datasets: datasets
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Tick"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Score"
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+});
+</script>
+
+<div>
+  <p>The number written in each cell is the score for that tick.</p>
+  <small>
+    <span class="ok">GREEN</span>: Success<br>
+    <span class="timeout">YELLOW</span>: Program timed out<br>
+    <span class="wrong">RED</span>: Output is wrong<br>
+    <span class="error">GREY</span>: Invalid record (Admin will fix it)
+  </small>
+</div>
+{%- endblock -%}

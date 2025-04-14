@@ -1,0 +1,18 @@
+services:
+  nginx:
+    image: nginx:1.27.4
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+
+  server:
+    build: ./server
+    restart: always
+
+  child:
+    build: ./child
+    restart: always
+    environment:
+      - FLAG=SECCON{dummy}

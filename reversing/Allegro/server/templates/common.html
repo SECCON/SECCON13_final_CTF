@@ -1,0 +1,31 @@
+{%- set pages = ["Dashboard", "Scoreboard", "History", "Rule"] -%}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ config.game.title }}</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/fast-sha256@1.3.0/sha256.min.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <h1>{{ title }} - {{ config.game.title }}</h1>
+      <div>
+        {%- for page in pages -%}
+        {%- if title == page -%}
+        <span style="margin: 1em">{{ page }}</span>
+        {%- else -%}
+        <a href="/{{ page|lower }}" style="margin: 1em">{{ page }}</a>
+        {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </header>
+
+    <main>
+      {% block main %}{% endblock %}
+    </main>
+  </body>
+</html>

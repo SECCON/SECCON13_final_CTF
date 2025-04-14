@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+import json
+import hashlib
+import os
+import random
+import subprocess
+import sys
+
+def gen_input(tick: int):
+    """tickに基づいてランダムな入力を作る
+    """
+    if tick <= 6:
+        # 0-30分
+        return os.urandom(random.randint(0x1000, 0x8_0000))
+
+    elif tick <= 12:
+        # 30-60分
+        return os.urandom(random.randint(0x8_0000, 0x80_0000))
+
+    elif tick <= 18:
+        # 60-90分
+        return os.urandom(random.randint(0x80_0000, 0x100_0000))
+
+    else:
+        # 90-120分
+        return os.urandom(random.randint(0x200_0000, 0x500_0000))
+
+if __name__ == '__main__':
+    dirpath = os.path.dirname(os.path.abspath(sys.argv[0]))
+    solver_path = os.path.join(dirpath, '../build/ans-2')
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} tick")
+        exit(1)
+
+    tick = int(sys.argv[1])
+
+    inp = gen_input(tick)
+    try:
+        p = subprocess.Popen(
+            [solver_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+        )
+        o = p.communicate(inp, timeout=10)
+        print(json.dumps({'input': inp.hex(), 'output': o[0].hex()}))
+
+    except subprocess.TimeoutExpired as e:
+        pass
+
+    finally:
+        p.kill()

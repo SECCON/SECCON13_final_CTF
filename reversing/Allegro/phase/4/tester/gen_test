@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+import json
+import hashlib
+import os
+import random
+import subprocess
+import sys
+
+def gen_input(tick: int):
+    """tickに基づいてランダムな入力を作る
+    """
+    if tick <= 12:
+        # 0-60分
+        data_prefix_len = random.randint(1, 16)
+        data_prefix = os.urandom(data_prefix_len).hex()
+        hash_prefix_len = random.randint(4, 5)
+        hash_prefix = os.urandom(hash_prefix_len).hex()[:hash_prefix_len]
+        offset = random.randrange(0, 32 - len(hash_prefix))
+        return [data_prefix, hash_prefix, str(offset)]
+
+    elif tick <= 18:
+        # 60-90分
+        hash_prefix_len = random.randint(4, 5)
+        hash_prefix = os.urandom(hash_prefix_len).hex()[:hash_prefix_len]
+        if hash_prefix_len == 4:
+            data_prefix_len = random.randint(1, 4096)
+            data_prefix = os.urandom(data_prefix_len).hex()
+        else:
+            data_prefix_len = random.randint(1, 64)
+            data_prefix = os.urandom(data_prefix_len).hex()
+        offset = random.randrange(0, 32 - len(hash_prefix))
+        algo = random.choice(["sha256", "md5", "sha512"])
+        return [data_prefix, hash_prefix, str(offset), algo]
+
+    else:
+        # 90-120分
+        data_prefix_len = random.randint(1, 16)
+        data_prefix = os.urandom(data_prefix_len).hex()
+        hash_prefix_len = 5
+        hash_prefix = os.urandom(hash_prefix_len).hex()[:hash_prefix_len]
+        if random.random() > 0.6:
+            data_prefix = data_prefix.upper()
+        if random.random() > 0.8:
+            hash_prefix = hash_prefix.upper()
+        offset = random.randrange(0, 32 - len(hash_prefix))
+        algo = random.choice(["sha256", "md5", "sha512"])
+        return [data_prefix, hash_prefix, str(offset), algo]
+
+if __name__ == '__main__':
+    dirpath = os.path.dirname(os.path.abspath(sys.argv[0]))
+    solver_path = os.path.join(dirpath, '../build/ans-4')
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} tick")
+        exit(1)
+
+    tick = int(sys.argv[1])
+
+    inp = ' '.join(gen_input(tick)).encode()
+    try:
+        p = subprocess.Popen(
+            [solver_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+        )
+        o = p.communicate(inp, timeout=10)
+        print(json.dumps({'input': inp.hex(), 'output': o[0].hex()}))
+
+    except subprocess.TimeoutExpired as e:
+        pass
+
+    finally:
+        p.kill()

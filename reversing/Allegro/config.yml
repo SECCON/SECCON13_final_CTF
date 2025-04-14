@@ -1,0 +1,84 @@
+game:
+  is_dom: false
+  title: "Allegro"
+  start: "2025/02/25 14:00" # 【必ず変える！】
+  end: "2025/02/25 21:00" # 【必ず変える！】
+  initial_phase: 1 # 【必ず変える！】
+  initial_tick: 1 # 【必ず変える！】
+  tick: 5
+  phase: # 【必ず変える！】
+    - span: 90
+      difficulty: ["baby", "easy", "medium"]
+    - span: 120
+      difficulty: ["baby", "easy", "medium", "hard"]
+    - span: 210
+      difficulty: ["baby", "baby", "easy", "easy", "medium", "medium", "hard"]
+    #- span: 120
+    #  difficulty: ["easy", "easy", "medium", "hard"]
+    #- span: 150
+    #  difficulty: ["baby", "baby", "easy", "medium", "hard"]
+    #- span: 150
+    #  difficulty: ["baby", "easy", "medium", "hard", "lunatic"]
+  scoring: [20, 16, 12, 9, 6, 4, 2, 1, 0]
+  isolation:
+    isolate_cpu: true
+    isolate_network: true
+    cores_per_team: 2
+    cap_drop: all
+    max_pids: 10
+    memory: 256
+
+scoreboard:
+  dom_url: "https://koth-dom.seccon.lifememory.team/api/score_registration"
+  int_url: "https://koth-int.seccon.lifememory.team/api/score_registration"
+  dom_key: "e762e28df073147b400b"
+  int_key: "e762e28df073147b400b"
+  category_name: "Allegro (Day 1)" # 【必ず変える！】
+
+server:
+  secret_key: "test"
+  sql: "../server/teams.db"
+  redis: "redis://localhost:6379/0"
+  phase: "../phase"
+  storage: "../storage"
+  logs: "../logs"
+
+teams:
+  dom:
+    - name: BunkyoWesterns
+      team_token: 1d55733295d4e707e869d7a7aae8b067
+    - name: TPC
+      team_token: fb65ef773f1192dfca1afc6b7f5405c7
+    - name: KUDoS
+      team_token: 1775058a395b961df45cf54aed69dd7a
+    - name: zoozar
+      team_token: 8de322547212c5a8191fccf9c2dd6b3a
+    - name: Double Lariat
+      team_token: b3cd2f280338d39f06a19022c7840546
+    - name: TSG
+      team_token: c65ff21161dcd4ee631775f6a3a975ef
+    - name: ZK Lovers
+      team_token: 3445f4739ac21c5e8d1f4b1eb6e276dc
+    - name: Team Enu
+      team_token: 2ae682f11b49d745fc153443c1bf461a
+    - name: AkihiroOmori(traP)
+      team_token: 595e3a191b0094dc3742b863f416ad1d
+  int:
+    - name: DiceGang
+      team_token: a50cf547c5a9ac6ed81712027d7235b8
+    - name: ierae
+      team_token: 6e030c39c3d6ed3db71011457701d037
+    - name: justCatTheFish
+      team_token: 6b9786d0ec894c8c9f7280f9edb837f9
+    - name: P1G SEKAI
+      team_token: 4e4c675ed033e7ce12cda0847e5802c9
+    - name: ADA INDONESIA COY
+      team_token: 70a8dfda17cf33c1679e2cddc6090cc8
+    - name: Super Guesser
+      team_token: 518b09cac515076836a68138a6ed7b60
+    - name: Never Stop Exploiting
+      team_token: ef1073158e9015e01fc9b5d4048e1cf8
+    - name: Maple Mallard Magistrates
+      team_token: afa3ecad14412adc91cefb1fd4986c2e
+    - name: blue-lotus
+      team_token: 9cb50f9220bdc13fb621630902e2256d

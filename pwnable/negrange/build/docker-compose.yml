@@ -1,0 +1,18 @@
+name: negrange-prod
+services:
+  challenge:
+    build:
+      context: ..
+      dockerfile: ./build/Dockerfile
+      args:
+        FLAG: "SECCON{h0w_c4n_1_c4lcul473_7h3_r4n63_0f_n36471v3_numb3r5}"
+    working_dir: /home/pwn
+    container_name: negrange-prod
+    ulimits:
+      nproc: 65535
+      core: 0
+    ports:
+      - "3729:9999"
+    entrypoint: /etc/init.sh
+    init: true
+    restart: always

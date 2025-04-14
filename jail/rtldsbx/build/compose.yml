@@ -1,0 +1,10 @@
+services:
+  rtld_sbx:
+    build: .
+    ulimits:
+      nproc: 65535
+      core: 0
+    ports:
+      - "${PORT:-9999}:9999"
+    restart: unless-stopped
+    init: true

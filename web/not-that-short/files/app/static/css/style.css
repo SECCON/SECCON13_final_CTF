@@ -1,0 +1,158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.url-shortener {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+input[type="url"] {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input[type="url"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+button {
+    padding: 12px 25px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background: #5a67d8;
+}
+
+.result {
+    margin-top: 1.5rem;
+}
+
+.result-container {
+    background: #f7fafc;
+    padding: 1.5rem;
+    border-radius: 5px;
+    border: 2px solid #e2e8f0;
+}
+
+.result-container.hidden {
+    display: none;
+}
+
+.result-container p {
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.shortened-url {
+    display: flex;
+    gap: 10px;
+}
+
+.shortened-url input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+#copyButton {
+    background: #4a5568;
+}
+
+#copyButton:hover {
+    background: #2d3748;
+}
+
+.success-message {
+    color: #48bb78;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.error-message {
+    color: #e53e3e;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    text-align: center;
+}
+
+.custom-shortcode {
+    margin-bottom: 1.5rem;
+}
+
+.custom-shortcode summary {
+    color: #4a5568;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.custom-shortcode summary:hover {
+    color: #667eea;
+}
+
+.shortcode-input-group {
+    margin-top: 0.5rem;
+}
+
+.shortcode-input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.shortcode-input-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}

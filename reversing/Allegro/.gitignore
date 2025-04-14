@@ -1,0 +1,9 @@
+__pycache__
+*~
+*.pyc
+*.spec
+server/teams.db
+server/teams.db-shm
+server/teams.db-wal
+storage/*
+logs/*.bin

@@ -1,0 +1,49 @@
+--- ./qemu-9.2.1/hw/nvme/ctrl.c.bck	2025-02-14 23:43:01.571760588 +0900
++++ ./qemu-9.2.1/hw/nvme/ctrl.c	2025-02-18 03:28:48.408550485 +0900
+@@ -2435,6 +2435,7 @@
+ static void nvme_compare_data_cb(void *opaque, int ret)
+ {
+     NvmeRequest *req = opaque;
++    NvmeRwCmd *rw = (NvmeRwCmd *)&req->cmd;
+     NvmeCtrl *n = nvme_ctrl(req);
+     NvmeNamespace *ns = req->ns;
+     BlockBackend *blk = ns->blkconf.blk;
+@@ -2453,7 +2454,7 @@
+         goto out;
+     }
+ 
+-    buf = g_malloc(ctx->data.iov.size);
++    buf = g_malloc(nvme_l2b(ns, le16_to_cpu(rw->nlb))+1);
+ 
+     status = nvme_bounce_data(n, buf, ctx->data.iov.size,
+                               NVME_TX_DIRECTION_TO_DEVICE, req);
+@@ -2468,7 +2469,6 @@
+     }
+ 
+     if (ns->lbaf.ms) {
+-        NvmeRwCmd *rw = (NvmeRwCmd *)&req->cmd;
+         uint64_t slba = le64_to_cpu(rw->slba);
+         uint32_t nlb = le16_to_cpu(rw->nlb) + 1;
+         size_t mlen = nvme_m2b(ns, nlb);
+@@ -4427,7 +4427,7 @@
+     }
+ 
+     max_zones = (data_size - sizeof(NvmeZoneReportHeader)) / zone_entry_sz;
+-    buf = g_malloc0(data_size);
++    buf = g_malloc(data_size);
+ 
+     zone = &ns->zone_array[zone_idx];
+     for (i = zone_idx; i < ns->num_zones; i++) {
+@@ -4472,11 +4472,7 @@
+         }
+     }
+ 
+-    status = nvme_c2h(n, (uint8_t *)buf, data_size, req);
+-
+-    g_free(buf);
+-
+-    return status;
++    return nvme_c2h(n, (uint8_t *)buf, data_size, req);
+ }
+ 
+ static uint16_t nvme_io_mgmt_recv_ruhs(NvmeCtrl *n, NvmeRequest *req,

@@ -1,0 +1,18 @@
+name: nvmemu-prod
+services:
+  challenge:
+    build:
+      context: ..
+      dockerfile: ./build/Dockerfile
+      args:
+        FLAG: "SECCON{n0n-v0l471l3_m3m0ry_4nd_v0l471l3_h34p_l4y0u7}"
+    working_dir: /home/pwn
+    container_name: nvmemu-prod
+    ulimits:
+      nproc: 65535
+      core: 0
+    ports:
+      - "7306:9999"
+    entrypoint: /etc/init.sh
+    init: true
+    restart: always

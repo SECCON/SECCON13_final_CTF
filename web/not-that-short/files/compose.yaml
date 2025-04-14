@@ -1,0 +1,198 @@
+services:
+  nginx:
+    image: nginx:1.27.4
+    init: true
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf.template:ro
+      - ./certs:/etc/nginx/certs:ro
+    restart: always
+    command: /bin/sh -c "envsubst '$$APP_HOSTNAME$$ADMIN_HOSTNAME$$AUTH_HOSTNAME' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    environment:
+      - APP_HOSTNAME=app.${SECCON_HOST}
+      - ADMIN_HOSTNAME=admin.${SECCON_HOST}
+      - AUTH_HOSTNAME=auth.${SECCON_HOST}
+    networks:
+      default:
+        ipv4_address: 172.137.0.2
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    init: true
+    volumes:
+      - app_data:/app/data
+    environment:
+      - AUTH_HOSTNAME=auth.${SECCON_HOST}
+      - APP_HOSTNAME=app.${SECCON_HOST}
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 172.137.0.3
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    init: true
+    environment:
+      - AUTH_HOSTNAME=auth.${SECCON_HOST}
+      - APP_HOSTNAME=app.${SECCON_HOST}
+      - ADMIN_HOSTNAME=admin.${SECCON_HOST}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    volumes:
+      - auth_data:/app/data
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 172.137.0.4
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    init: true
+    environment:
+      - FLAG=${FLAG}
+      - AUTH_HOSTNAME=auth.${SECCON_HOST}
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 172.137.0.5
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    init: true
+    ports:
+      - "1337:1337"
+    environment:
+      - APP_HOSTNAME=app.${SECCON_HOST}
+      - AUTH_HOSTNAME=auth.${SECCON_HOST}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    restart: unless-stopped
+    extra_hosts:
+      - "auth.${SECCON_HOST}:172.137.0.2"
+      - "admin.${SECCON_HOST}:172.137.0.2"
+      - "app.${SECCON_HOST}:172.137.0.2"
+      # Sinkhole other challenges
+      - "challenge-purexss.global.int.seccon.games:127.0.0.1"
+      - "challenge-purexss.int.seccon.games:127.0.0.1"
+      - "purexss.int.seccon.games:127.0.0.1"
+      - "challenge-rsa-plus.global.int.seccon.games:127.0.0.1"
+      - "challenge-rsa-plus.int.seccon.games:127.0.0.1"
+      - "rsaplus.int.seccon.games:127.0.0.1"
+      - "challenge-dlp-plus.global.int.seccon.games:127.0.0.1"
+      - "challenge-dlp-plus.int.seccon.games:127.0.0.1"
+      - "dlpplus.int.seccon.games:127.0.0.1"
+      - "challenge-super-fastcgi.global.int.seccon.games:127.0.0.1"
+      - "challenge-super-fastcgi.int.seccon.games:127.0.0.1"
+      - "super-fastcgi.int.seccon.games:127.0.0.1"
+      - "challenge-uint32array.global.int.seccon.games:127.0.0.1"
+      - "challenge-uint32array.int.seccon.games:127.0.0.1"
+      - "uint32array.int.seccon.games:127.0.0.1"
+      - "challenge-witchnote.global.int.seccon.games:127.0.0.1"
+      - "challenge-witchnote.int.seccon.games:127.0.0.1"
+      - "witchnote.int.seccon.games:127.0.0.1"
+      - "challenge-pp3.global.int.seccon.games:127.0.0.1"
+      - "challenge-pp3.int.seccon.games:127.0.0.1"
+      - "pp3.int.seccon.games:127.0.0.1"
+      - "challenge-allegro.global.int.seccon.games:127.0.0.1"
+      - "challenge-allegro.int.seccon.games:127.0.0.1"
+      - "allegro.int.seccon.games:127.0.0.1"
+      - "challenge-heccon.global.int.seccon.games:127.0.0.1"
+      - "challenge-heccon.int.seccon.games:127.0.0.1"
+      - "heccon.int.seccon.games:127.0.0.1"
+      - "challenge-nvmemu.global.int.seccon.games:127.0.0.1"
+      - "challenge-nvmemu.int.seccon.games:127.0.0.1"
+      - "nvmemu.int.seccon.games:127.0.0.1"
+      - "challenge-negrange.global.int.seccon.games:127.0.0.1"
+      - "challenge-negrange.int.seccon.games:127.0.0.1"
+      - "negrange.int.seccon.games:127.0.0.1"
+      - "challenge-x-x.global.int.seccon.games:127.0.0.1"
+      - "challenge-x-x.int.seccon.games:127.0.0.1"
+      - "x-x.int.seccon.games:127.0.0.1"
+      - "challenge-dual-summon.global.int.seccon.games:127.0.0.1"
+      - "challenge-dual-summon.int.seccon.games:127.0.0.1"
+      - "dual-summon.int.seccon.games:127.0.0.1"
+      - "challenge-twisty-xss.global.int.seccon.games:127.0.0.1"
+      - "challenge-twisty-xss.int.seccon.games:127.0.0.1"
+      - "twisty-xss.int.seccon.games:127.0.0.1"
+      - "challenge-sgg1.global.int.seccon.games:127.0.0.1"
+      - "challenge-sgg1.int.seccon.games:127.0.0.1"
+      - "seccon-glitch-gate-1.int.seccon.games:127.0.0.1"
+      - "challenge-six.global.int.seccon.games:127.0.0.1"
+      - "challenge-six.int.seccon.games:127.0.0.1"
+      - "connect-six.int.seccon.games:127.0.0.1"
+      - "challenge-rtldsbx.global.int.seccon.games:127.0.0.1"
+      - "challenge-rtldsbx.int.seccon.games:127.0.0.1"
+      - "rtldsbx.int.seccon.games:127.0.0.1"
+      - "challenge-purexss.global.dom.seccon.games:127.0.0.1"
+      - "challenge-purexss.dom.seccon.games:127.0.0.1"
+      - "purexss.dom.seccon.games:127.0.0.1"
+      - "challenge-rsa-plus.global.dom.seccon.games:127.0.0.1"
+      - "challenge-rsa-plus.dom.seccon.games:127.0.0.1"
+      - "rsaplus.dom.seccon.games:127.0.0.1"
+      - "challenge-dlp-plus.global.dom.seccon.games:127.0.0.1"
+      - "challenge-dlp-plus.dom.seccon.games:127.0.0.1"
+      - "dlpplus.dom.seccon.games:127.0.0.1"
+      - "challenge-super-fastcgi.global.dom.seccon.games:127.0.0.1"
+      - "challenge-super-fastcgi.dom.seccon.games:127.0.0.1"
+      - "super-fastcgi.dom.seccon.games:127.0.0.1"
+      - "challenge-uint32array.global.dom.seccon.games:127.0.0.1"
+      - "challenge-uint32array.dom.seccon.games:127.0.0.1"
+      - "uint32array.dom.seccon.games:127.0.0.1"
+      - "challenge-witchnote.global.dom.seccon.games:127.0.0.1"
+      - "challenge-witchnote.dom.seccon.games:127.0.0.1"
+      - "witchnote.dom.seccon.games:127.0.0.1"
+      - "challenge-pp3.global.dom.seccon.games:127.0.0.1"
+      - "challenge-pp3.dom.seccon.games:127.0.0.1"
+      - "pp3.dom.seccon.games:127.0.0.1"
+      - "challenge-allegro.global.dom.seccon.games:127.0.0.1"
+      - "challenge-allegro.dom.seccon.games:127.0.0.1"
+      - "allegro.dom.seccon.games:127.0.0.1"
+      - "challenge-heccon.global.dom.seccon.games:127.0.0.1"
+      - "challenge-heccon.dom.seccon.games:127.0.0.1"
+      - "heccon.dom.seccon.games:127.0.0.1"
+      - "challenge-nvmemu.global.dom.seccon.games:127.0.0.1"
+      - "challenge-nvmemu.dom.seccon.games:127.0.0.1"
+      - "nvmemu.dom.seccon.games:127.0.0.1"
+      - "challenge-negrange.global.dom.seccon.games:127.0.0.1"
+      - "challenge-negrange.dom.seccon.games:127.0.0.1"
+      - "negrange.dom.seccon.games:127.0.0.1"
+      - "challenge-x-x.global.dom.seccon.games:127.0.0.1"
+      - "challenge-x-x.dom.seccon.games:127.0.0.1"
+      - "x-x.dom.seccon.games:127.0.0.1"
+      - "challenge-dual-summon.global.dom.seccon.games:127.0.0.1"
+      - "challenge-dual-summon.dom.seccon.games:127.0.0.1"
+      - "dual-summon.dom.seccon.games:127.0.0.1"
+      - "challenge-twisty-xss.global.dom.seccon.games:127.0.0.1"
+      - "challenge-twisty-xss.dom.seccon.games:127.0.0.1"
+      - "twisty-xss.dom.seccon.games:127.0.0.1"
+      - "challenge-sgg1.global.dom.seccon.games:127.0.0.1"
+      - "challenge-sgg1.dom.seccon.games:127.0.0.1"
+      - "seccon-glitch-gate-1.dom.seccon.games:127.0.0.1"
+      - "challenge-six.global.dom.seccon.games:127.0.0.1"
+      - "challenge-six.dom.seccon.games:127.0.0.1"
+      - "connect-six.dom.seccon.games:127.0.0.1"
+      - "challenge-rtldsbx.global.dom.seccon.games:127.0.0.1"
+      - "challenge-rtldsbx.dom.seccon.games:127.0.0.1"
+      - "rtldsbx.dom.seccon.games:127.0.0.1"
+    networks:
+      default:
+        ipv4_address: 172.137.0.6
+
+volumes:
+  auth_data:
+  app_data:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.137.0.0/24

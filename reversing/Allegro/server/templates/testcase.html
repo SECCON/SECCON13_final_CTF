@@ -1,0 +1,21 @@
+{% extends "common.html" %}
+{% set title = "Testcase" %}
+{%- block main -%}
+<h3>Test cases</h3>
+<p>You can review the test cases from 3 or more ticks ago (i.e., 15 minutes or older).</p>
+<table>
+  {%- set latest_tick = get_tick(config) -%}
+  {%- if latest_tick == -1 -%}
+  {%- set latest_tick = config['game']['max_tick'] + 3 -%}
+  {%- endif -%}
+  {%- for t in range(1, latest_tick+1, 10) -%}
+  <tr>
+    {%- for j in range(10) -%}
+    {%- if t+j <= latest_tick - 3 -%}
+    <td><a href="/api/testcase/{{ t+j }}">{{ t+j }}</a></td>
+    {%- endif -%}
+    {%- endfor -%}
+  </tr>
+  {%- endfor -%}
+</table>
+{%- endblock -%}

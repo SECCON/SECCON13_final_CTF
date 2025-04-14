@@ -1,0 +1,114 @@
+{% extends "common.html" %}
+{% set title = "Rule" %}
+{%- block main -%}
+      <span class="popup">{{ session['name'] }}</span>
+      <div>
+        <h3>Overview</h3>
+        <p>
+          This challenge runs in <strong>6 phases</strong>, each providing a slow x86-64 ELF file (<code>prog-N</code>). Your goal is to <strong>modify or rewrite</strong> these program so they <strong>produce the same output</strong> as the original but complete in under <strong>3 seconds</strong>. The <strong>faster</strong> your solution, the <strong>higher</strong> your score.
+        </p>
+
+        <h3>How the Competition Works</h3>
+        <ul>
+          <li>Every <strong>5 minutes</strong> (a “tick”), your latest submission is tested with a random input.</li>
+          <li>If your program finishes correctly within <strong>3 seconds</strong>, you earn points.</li>
+          <li>Each phase’s program is retired after that phase ends.</li>
+        </ul>
+
+        <h3>Upload & Evaluation</h3>
+        <h5>Upload</h5>
+        <ol>
+          <li>Download <code>prog-N</code> and <code>test.py</code> via <a href="/dashboard">Dashboard</a></li>
+          <li>Reverse engineer the program and improve the speed.</li>
+          <li>Use the provided <code>test.py</code> to run some simple tests.</li>
+          <li>Upload your modified <code>prog-N</code> through <a href="/dashboard">Dashboard</a>.</li>
+        </ol>
+
+        <h5>Evaluation</h5>
+        <ul>
+          <li>Your program must read from <strong>stdin</strong> and write to <strong>stdout</strong>.</li>
+          <li>Your program must finish in under <strong>3 seconds</strong>.</li>
+          <li>The output must match what the original program would produce if it ran with unlimited time and resource.</li>
+          <li>Only <strong>standard output</strong> is checked.</li>
+          <li>You can check the result in <a href="/scoreboard">Scoreboard</a>.</li>
+          <li>All <strong>test cases are guaranteed to be valid</strong> - they will not trigger undefined behavior such as arithmetic overflows or out-of-bounds memory access.</li>
+        </ul>
+
+        <h5>Timing & Scoring</h5>
+        <ul>
+          <li>For each tick, your program is run <strong>20 times</strong> using the same test case.</li>
+          <li>If any of these execution times out or the output is incorrect, it fails.</li>
+          <li>The official speed is the <strong>median</strong> of these 20 runs.</li>
+          <li>The execution time is <strong>rounded to one decimal place</strong> (e.g. 1.3s), with rounding to the nearest 0.1s.</li>
+          <li>If the program finishes execution within 3 seconds, the subsequent time taken to read from stdout is not counted towards the execution time limit, meaning the final evaluation time may exceed 3 seconds.</li>
+          <li>Inputs become more challenging as ticks progress. (Check <a href="/dashboard">Dashboard</a> for the testcase difficulty)</li>
+          <li>Scores are assigned based on ranking as follows.</li>
+        </ul>
+
+        <table>
+          <tr>
+            <th>Rank</th>
+            {%- for _ in config.game.scoring -%}
+            <th>
+              {%- if loop.index == 1 -%}1st
+              {%- elif loop.index == 2 -%}2nd
+              {%- elif loop.index == 3 -%}3rd
+              {%- else -%}{{ loop.index }}th
+              {%- endif -%}
+            </th>
+            {%- endfor -%}
+          </tr>
+          <tr>
+            <th>Score</th>
+            {% for score in config.game.scoring %}
+            <td>{{ score }}pt</td>
+            {%- endfor -%}
+          </tr>
+        </table>
+        <small>* If multiple participants share the same rank, they receive the full score for that rank.</small>
+
+        <h3>Test Environment</h3>
+        <ul>
+          <li><strong>Host</strong>: Ubuntu 24.04 LTS (No external library is installed.)</li>
+          <li><strong>CPU</strong>: Up to {{ config.game.isolation.cores_per_team }} cores (out of 20 total) per run <small>(See "CPU Model" section for more details)</small></li>
+          <li><strong>Memory</strong>: {{ config.game.isolation.memory }} MB limit per run (<code>-m 256m</code>)</li>
+          <li><strong>Process</strong>: Guaranteed to spawn up to 3 processes (<code>--pids-limit={{ config.game.isolation.max_pids }}</code>)</li>
+          <li><strong>Network</strong>: No external network access (<code>--network=none</code>)</li>
+          <li><strong>Capability</strong>: No capability (<code>--cap-drop=ALL</code>)</li>
+          <li><strong>Cache</strong>: Not dropped between runs.</li>
+          <li>Temporary directory (<code>/tmp</code>) is available.</li>
+          <li>All teams' programs run in parallel but on different cores.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Phase</h3>
+        <p>Today's time table</p>
+        <table>
+          <thead>
+            <tr><th>Phase</th><th>Duration (min)</th><th>Timespan</th><th>Tick</th></tr>
+          </thead>
+          <tbody>
+            {%- set ns = namespace(tick=config.game.initial_tick, time=config.game.start) -%}
+            {%- for phase in config.game.phase -%}
+            <tr>
+              {%- set end_tick = ns.tick + (phase.span // config.game.tick) - 1 -%}
+              {%- set end_time = ns.time + phase.span -%}
+              <td>{{ config.game.initial_phase + loop.index0 }}</td>
+              <td>{{ (phase.span.total_seconds() // 60) | int }}</td>
+              <td>{{ ns.time.strftime('%H:%M') }} - {{ end_time.strftime('%H:%M') }}</td>
+              <td>{{ ns.tick }} - {{ end_tick }}</td>
+              {%- set ns.tick = end_tick + 1 -%}
+              {%- set ns.time = end_time -%}
+            </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3>CPU Model</h3>
+        <pre><code>$ lscpu
+{{ lscpu }}</code></pre>
+      </div>
+{%- endblock -%}

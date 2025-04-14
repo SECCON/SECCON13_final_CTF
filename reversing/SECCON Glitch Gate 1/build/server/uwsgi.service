@@ -1,0 +1,17 @@
+[Unit]
+Description = uWSGI
+After = syslog.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/server
+ExecStart = /home/ubuntu/.pyenv/shims/uwsgi --ini uwsgi.ini
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
